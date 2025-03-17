@@ -1,4 +1,13 @@
-module.exports = async function (context, req) {
+const express = require("express");
+const bodyParser = require("body-parser");
+
+const app = express();
+const PORT = process.env.PORT || 8080; // Correct Azure Port Configuration
+
+app.use(bodyParser.json());
+
+// Health Risk Calculation Endpoint
+app.post("/calculateRisk", (req, res) => {
     const { age, bmi, systolic, diastolic, familyHistory = [] } = req.body;
 
     let riskScore = 0;
@@ -44,7 +53,20 @@ module.exports = async function (context, req) {
     else if (riskScore <= 75) riskCategory = "High Risk";
     else riskCategory = "Uninsurable";
 
-    context.res = {
-        body: { riskScore, riskCategory }
-    };
-};
+    // Console log for better visibility
+    console.log("Received Data:", req.body);
+    console.log("Calculated Risk Score:", riskScore);
+    console.log("Assigned Risk Category:", riskCategory);
+
+    res.json({ riskScore, riskCategory });
+});
+
+// Root Route (for health check)
+app.get("/", (req, res) => {
+    res.send("Health Risk API is running successfully! 🚀");
+});
+
+// Start the server
+app.listen(PORT, () => {
+    console.log(` Server is running on port ${PORT}`);
+});
