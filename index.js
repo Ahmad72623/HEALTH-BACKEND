@@ -13,51 +13,50 @@ app.use(cors({
 app.use(express.json());
 
 app.post('/calculateRisk', (req, res) => {
-    const { age, bmi, systolic, diastolic, familyHistory = [] } = req.body;
+    const { age, weight, height, systolic, diastolic, familyHistory = [] } = req.body;
 
+    //  Initialize risk score
     let riskScore = 0;
 
-    // Age Risk Calculation
+    // ✅ Age Risk Calculation
     if (age < 30) riskScore += 0;
     else if (age < 45) riskScore += 10;
     else if (age < 60) riskScore += 20;
     else riskScore += 30;
 
-    // BMI Risk Calculation
+    //  BMI Calculation
+    const bmi = weight / ((height / 100) * (height / 100));
+
     if (bmi < 25) riskScore += 0;
     else if (bmi < 30) riskScore += 30;
     else riskScore += 75;
 
-    // Blood Pressure Risk Calculation
-    let bpRisk = 0;
+    //  Blood Pressure Risk Calculation
     if (systolic > 180 || diastolic > 120) {
-        bpRisk = 100;
+        riskScore += 100; // Crisis
     } else if (systolic >= 140 || diastolic >= 90) {
-        bpRisk = 75;
+        riskScore += 75; // Stage 2
     } else if (systolic >= 130 || diastolic >= 80) {
-        bpRisk = 30;
+        riskScore += 30; // Stage 1
     } else if (systolic >= 120 && diastolic < 80) {
-        bpRisk = 15;
+        riskScore += 15; // Elevated
     } else {
-        bpRisk = 0;
+        riskScore += 0; // Normal
     }
-    riskScore += bpRisk;
 
-    // Family History Risk Calculation
-    let familyRisk = 0;
-    if (familyHistory.includes("Diabetes")) familyRisk += 10;
-    if (familyHistory.includes("Cancer")) familyRisk += 10;
-    if (familyHistory.includes("Alzheimers")) familyRisk += 10;
+    //  Family History Risk Calculation
+    if (familyHistory.includes("Diabetes")) riskScore += 10;
+    if (familyHistory.includes("Cancer")) riskScore += 10;
+    if (familyHistory.includes("Alzheimers")) riskScore += 10;
 
-    riskScore += familyRisk;
-
-    // Determine Risk Category
+    //  Determine Risk Category
     let riskCategory = "";
     if (riskScore <= 20) riskCategory = "Low Risk";
     else if (riskScore <= 50) riskCategory = "Moderate Risk";
     else if (riskScore <= 75) riskCategory = "High Risk";
     else riskCategory = "Uninsurable";
 
+    //  Ensure the Risk Score is Returned
     res.json({ riskScore, riskCategory });
 });
 
