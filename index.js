@@ -1,13 +1,18 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-
+const express = require('express');
+const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 8080; // Correct Azure Port Configuration
+const PORT = process.env.PORT || 8080; // Ensure the correct port
 
-app.use(bodyParser.json());
+// Enable CORS
+app.use(cors({
+    origin: 'https://wonderful-coast-0c3cd9710.6.azurestaticapps.net', // Replace with your frontend URL
+    methods: ['POST', 'GET', 'OPTIONS'],
+    allowedHeaders: ['Content-Type']
+}));
 
-// Health Risk Calculation Endpoint
-app.post("/calculateRisk", (req, res) => {
+app.use(express.json());
+
+app.post('/calculateRisk', (req, res) => {
     const { age, bmi, systolic, diastolic, familyHistory = [] } = req.body;
 
     let riskScore = 0;
@@ -53,20 +58,9 @@ app.post("/calculateRisk", (req, res) => {
     else if (riskScore <= 75) riskCategory = "High Risk";
     else riskCategory = "Uninsurable";
 
-    // Console log for better visibility
-    console.log("Received Data:", req.body);
-    console.log("Calculated Risk Score:", riskScore);
-    console.log("Assigned Risk Category:", riskCategory);
-
     res.json({ riskScore, riskCategory });
 });
 
-// Root Route (for health check)
-app.get("/", (req, res) => {
-    res.send("Health Risk API is running successfully! 🚀");
-});
-
-// Start the server
 app.listen(PORT, () => {
-    console.log(` Server is running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
